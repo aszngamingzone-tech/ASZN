@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tic-Tac-Toe</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --navy: #1F3A5F;
+  --ivory: #F8F7F4;
+  --gold: #CBB994;
+  --shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--navy);
+  font-family: 'Inter', sans-serif;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 440px;
+  background: var(--ivory);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 36px 38px;
+  border: 2px solid var(--gold);
+  text-align: center;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  color: var(--navy);
+  margin-bottom: 25px;
+}
+
+#playerName {
+  width: 90%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--gold);
+  font-size: 1rem;
+  margin-bottom: 14px;
+}
+
+.btn {
+  background: var(--navy);
+  color: var(--ivory);
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.3s;
+  box-shadow: var(--shadow);
+}
+.btn:hover {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.level-btn {
+  background: transparent;
+  color: var(--navy);
+  border: 2px solid var(--gold);
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.3s;
+}
+.level-btn:hover,
+.level-btn.active {
+  background: var(--gold);
+  color: var(--ivory);
+}
+
+#status {
+  margin: 10px 0 18px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto 18px;
+}
+
+.cell {
+  background: var(--ivory);
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  color: var(--navy);
+  border: 2px solid var(--gold);
+}
+.cell.taken { opacity: 0.9; cursor: not-allowed; }
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.score-box {
+  flex: 1;
+  background: var(--ivory);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+  font-weight: 700;
+  color: var(--navy);
+  border: 2px solid var(--gold);
+}
+
+.action-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.ghost {
+  background: transparent;
+  border: 2px solid var(--gold);
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--navy);
+  font-weight: 700;
+  transition: 0.3s;
+}
+.ghost:hover { background: var(--gold); color: var(--ivory); }
+
+.leaderboard {
+  margin-top: 18px;
+  background: var(--ivory);
+  padding: 14px 16px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 2px solid var(--gold);
+}
+
+.leaderboard h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  color: var(--navy);
+  font-family: 'Playfair Display', serif;
+}
+
+@media (max-width:440px) {
+  .cell { height:72px; font-size:2rem; }
+}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Tic-Tac-Toe</h1>
+
+    <div id="startCard">
+      <p>Enter your name to begin</p>
+      <input id="playerName" placeholder="Your name" />
+      <p>Select mode:</p>
+      <div class="controls">
+        <label><input type="radio" name="gameMode" value="ai" checked> vs AI</label>
+        <label><input type="radio" name="gameMode" value="2p"> 2-Player</label>
+      </div>
+      <button class="btn" onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="gameArea" style="display:none;">
+      <div class="controls" id="levelControls">
+        <button class="level-btn active" id="easyBtn" onclick="setLevel('easy')">Easy</button>
+        <button class="level-btn" id="mediumBtn" onclick="setLevel('medium')">Medium</button>
+        <button class="level-btn" id="hardBtn" onclick="setLevel('hard')">Hard</button>
+      </div>
+
+      <div id="status"></div>
+      <div class="board" id="board"></div>
+
+      <div class="score-row">
+        <div class="score-box" id="matchScore">Player: 0</div>
+        <div class="score-box" id="matchAIScore">AI: 0</div>
+      </div>
+
+      <div class="action-row">
+        <button class="ghost" onclick="restartMatch()">Restart Board</button>
+        <button class="ghost" onclick="resetMatchScores()">Reset Match Scores</button>
+      </div>
+
+      <div class="action-row">
+        <button class="ghost" onclick="promptResetLeaderboard()">Reset Leaderboard</button>
+      </div>
+
+      <div class="leaderboard" id="leaderboard">
+        <h3>Leaderboard</h3>
+        <table id="lbTable" width="100%">
+          <thead><tr><th>Rank</th><th>Name</th><th>Wins</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+const matchScoreEl = document.getElementById('matchScore');
+const matchAIScoreEl = document.getElementById('matchAIScore');
+const lbTableBody = document.querySelector('#lbTable tbody');
+
+let playerName = '';
+let board = Array(9).fill('');
+let playerMark = 'X', aiMark = 'O';
+let matchPlayerWins = 0, matchAiWins = 0;
+let gameActive = true;
+let aiThinking = false;
+let level = 'easy';
+const AI_DELAY_MS = 700;
+let twoPlayerMode = false;
+let turn = 'X';
+
+const LB_KEY = 'tictactoe_leaderboard_v1';
+let leaderboard = JSON.parse(localStorage.getItem(LB_KEY) || '[]');
+
+function startGame(){
+  const nameInput = document.getElementById('playerName');
+  playerName = nameInput.value.trim();
+  if(!playerName){ alert('Enter a name'); return; }
+
+  const mode = document.querySelector('input[name="gameMode"]:checked').value;
+  twoPlayerMode = mode === '2p';
+
+  document.getElementById('startCard').style.display = 'none';
+  document.getElementById('gameArea').style.display = 'block';
+  document.getElementById('levelControls').style.display = twoPlayerMode ? 'none' : 'flex';
+  resetBoard();
+  renderLeaderboard();
+  updateMatchScores();
+  statusEl.textContent = twoPlayerMode ? "Player 1's turn" : `${playerName}'s turn`;
+}
+
+function setLevel(l){
+  level = l;
+  document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(l+'Btn').classList.add('active');
+}
+
+function renderBoard(){
+  boardEl.innerHTML = '';
+  for(let i=0;i<9;i++){
+    const d = document.createElement('div');
+    d.className = 'cell'+(board[i]?' taken':'');
+    d.textContent = board[i];
+    d.addEventListener('click',()=>handleCellClick(i));
+    boardEl.appendChild(d);
+  }
+}
+
+function handleCellClick(i){
+  if(!gameActive || (aiThinking && !twoPlayerMode)) return;
+  if(board[i]!=='') return;
+
+  if(twoPlayerMode){
+    board[i] = turn;
+    renderBoard();
+    if(checkWin(turn)){
+      turn==='X'?matchPlayerWins++:matchAiWins++;
+      updateMatchScores();
+      endRound(`Player ${turn==='X'?1:2} wins!`);
+      return;
+    }
+    if(board.every(c=>c!=='')){ endRound("It's a draw!"); return; }
+    turn = turn==='X'?'O':'X';
+    statusEl.textContent = `Player ${turn==='X'?1:2}'s turn`;
+  } else {
+    board[i] = playerMark;
+    renderBoard();
+    if(checkWin(playerMark)){
+      matchPlayerWins++;
+      updateMatchAndLeaderboard();
+      endRound(`${playerName} wins!`);
+      return;
+    }
+    if(board.every(c=>c!=='')){ endRound("It's a draw!"); return; }
+    aiThinking = true;
+    statusEl.textContent = 'AI is thinking...';
+    setTimeout(()=>{
+      aiMove();
+      aiThinking=false;
+    }, AI_DELAY_MS);
+  }
+}
+
+function aiMove(){
+  let move = null;
+  if(level==='easy'){ move=randomMove(); }
+  else if(level==='medium'){ move=mediumMove(); }
+  else { move=hardMove(); }
+  if(move===null) move=randomMove();
+  board[move]=aiMark;
+  renderBoard();
+  if(checkWin(aiMark)){ matchAiWins++; updateMatchScores(); endRound('AI wins!'); return; }
+  if(board.every(c=>c!=='')){ endRound("It's a draw!"); return; }
+  statusEl.textContent = `${playerName}'s turn`;
+}
+
+function randomMove(){ const empties = board.map((v,i)=>v===''?i:null).filter(v=>v!==null); if(!empties.length) return null; return empties[Math.floor(Math.random()*empties.length)]; }
+function mediumMove(){ let empties = board.map((v,i)=>v===''?i:null).filter(v=>v!==null); for(let i of empties){ board[i]=aiMark; if(checkWin(aiMark)){ board[i]=''; return i; } board[i]=''; } for(let i of empties){ board[i]=playerMark; if(checkWin(playerMark)){ board[i]=''; return i; } board[i]=''; } if(board[4]==='') return 4; const corners=[0,2,6,8].filter(i=>board[i]===''); if(corners.length) return corners[Math.floor(Math.random()*corners.length)]; return randomMove(); }
+function hardMove(){ const best=minimax(board.slice(),aiMark); return (best && typeof best.index==='number') ? best.index : randomMove(); }
+function minimax(newBoard,currentPlayer){ const avail=newBoard.map((v,i)=>v===''?i:null).filter(v=>v!==null); if(checkWinOnBoard(newBoard,playerMark)) return {score:-10}; if(checkWinOnBoard(newBoard,aiMark)) return {score:10}; if(avail.length===0) return {score:0}; const moves=[]; for(let i of avail){ const moveObj={index:i}; newBoard[i]=currentPlayer; if(currentPlayer===aiMark){ moveObj.score=minimax(newBoard,playerMark).score; } else { moveObj.score=minimax(newBoard,aiMark).score; } newBoard[i]=''; moves.push(moveObj); } let bestMove; if(currentPlayer===aiMark){ let bestScore=-Infinity; moves.forEach(m=>{ if(m.score>bestScore){bestScore=m.score; bestMove=m;} }); } else { let bestScore=Infinity; moves.forEach(m=>{ if(m.score<bestScore){bestScore=m.score; bestMove=m;} }); } return bestMove; }
+function checkWinOnBoard(bd,mark){ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return wins.some(combo=>combo.every(i=>bd[i]===mark)); }
+function checkWin(mark){ return checkWinOnBoard(board,mark); }
+
+function endRound(msg){
+  gameActive=false;
+  statusEl.textContent=msg;
+  setTimeout(()=>{ resetBoard(); gameActive=true; statusEl.textContent=twoPlayerMode?`Player ${turn==='X'?1:2}'s turn`:`${playerName}'s turn`; },1200);
+}
+
+function resetBoard(){ board=Array(9).fill(''); renderBoard(); turn='X'; }
+function restartMatch(){ resetBoard(); gameActive=true; statusEl.textContent=twoPlayerMode?"Player 1's turn":`${playerName}'s turn`; }
+function resetMatchScores(){ if(!confirm('Reset match (current) scores?')) return; matchPlayerWins=0; matchAiWins=0; updateMatchScores(); }
+function updateMatchScores(){ matchScoreEl.textContent=twoPlayerMode?`Player 1: ${matchPlayerWins}`:`${playerName}: ${matchPlayerWins}`; matchAIScoreEl.textContent=twoPlayerMode?`Player 2: ${matchAiWins}`:`AI: ${matchAiWins}`; }
+function updateMatchAndLeaderboard(){ updateMatchScores(); let entry=leaderboard.find(e=>e.name===playerName); if(entry){ entry.wins++; } else { leaderboard.push({name:playerName,wins:1}); } leaderboard.sort((a,b)=>b.wins-a.wins); localStorage.setItem(LB_KEY,JSON.stringify(leaderboard)); renderLeaderboard(); }
+function renderLeaderboard(){ const top=leaderboard.slice(0,5); lbTableBody.innerHTML=''; top.forEach((p,idx)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${idx+1}</td><td>${escapeHtml(p.name)}</td><td>${p.wins}</td>`; lbTableBody.appendChild(tr); }); if(top.length===0){ lbTableBody.innerHTML='<tr><td colspan="3" style="opacity:0.7">No wins yet — be the first!</td></tr>'; } }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function promptResetLeaderboard(){ const pass=prompt('Enter admin password to reset leaderboard:'); if(pass==='abhi1'){ if(confirm('Confirm: clear entire leaderboard?')){ leaderboard=[]; localStorage.removeItem(LB_KEY); renderLeaderboard(); alert('Leaderboard cleared.'); } } else { alert('Incorrect password.'); } }
+
+renderBoard();
+renderLeaderboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Memory Card Game — Themed</title>
+<style>
+  :root {
+    --bg: #0f1724;
+    --accent: #8b5cf6;
+    --success: #10b981;
+    --text: #e6eef8;
+    font-family: "Segoe UI", Inter, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #071021, #071426);
+    color: var(--text);
+    padding: 12px;
+  }
+
+  .game-wrap {
+    width: 100%;
+    max-width: 900px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .title { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--accent), #6d28d9);
+    border-radius: 10px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  h1 { margin: 0; font-size: 20px; }
+  p.sub { margin: 0; font-size: 13px; color: rgba(230,238,248,0.7); }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    background: rgba(255,255,255,0.05);
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .btn {
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+  }
+
+  .btn:hover { background: var(--accent); color: #fff; transform: translateY(-2px); }
+  .btn.accent { background: linear-gradient(90deg, var(--accent), #6d28d9); border: none; color: white; }
+
+  .theme-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .theme-buttons .btn {
+    background: rgba(255,255,255,0.05);
+    font-size: 14px;
+  }
+
+  .theme-buttons .btn.active {
+    background: linear-gradient(90deg, #facc15, #fbbf24);
+    color: #000;
+    border: none;
+    transform: scale(1.05);
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .card {
+    perspective: 1000px;
+    height: 110px;
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .card-inner {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.4s ease;
+    transform-style: preserve-3d;
+    cursor: pointer;
+    border-radius: 12px;
+  }
+
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    font-size: 36px;
+  }
+
+  .face.front {
+    transform: rotateY(180deg);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .face.back {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .checkmark {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 22px;
+    color: var(--success);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .matched .checkmark { opacity: 1; }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,0.6);
+    z-index: 50;
+  }
+
+  .panel {
+    background: linear-gradient(180deg, #0b1220, #06121b);
+    padding: 22px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 260px;
+  }
+
+  .panel h2 { margin: 8px 0 4px 0; }
+  .small { font-size: 13px; color: rgba(230,238,248,0.7); }
+
+  /* --- Responsive Adjustments --- */
+  @media (max-width: 768px) {
+    .board { grid-template-columns: repeat(3, 1fr); }
+    .card { height: 90px; }
+    h1 { font-size: 18px; }
+    body { padding: 8px; }
+  }
+
+  @media (max-width: 480px) {
+    .board { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .card { height: 75px; }
+    .face { font-size: 28px; }
+    .stat { font-size: 12px; padding: 5px 10px; }
+    .btn { font-size: 12px; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="game-wrap">
+  <header>
+    <div class="title">
+      <div class="logo">M</div>
+      <div>
+        <h1>Memory Match</h1>
+        <p class="sub">Select a theme and match all pairs in 1 minute!</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="stat"><span id="timer">01:00</span></div>
+      <div class="stat">Moves: <span id="moves">0</span></div>
+      <button id="restart" class="btn">Restart</button>
+    </div>
+  </header>
+
+  <div class="theme-buttons">
+    <button class="btn active" data-theme="fruits">🍎 Fruits</button>
+    <button class="btn" data-theme="sports">⚽ Sports</button>
+    <button class="btn" data-theme="animals">🐶 Animals</button>
+  </div>
+
+  <div id="board" class="board"></div>
+
+  <div id="modal" class="modal" style="display:none;">
+    <div class="panel">
+      <div id="modal-content"></div>
+      <button id="modal-restart" class="btn accent" style="margin-top:12px;">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const THEMES = {
+    fruits: ["🍎","🍊","🍉","🍇","🍓","🍒","🍌","🥝","🍍","🥭"],
+    sports: ["⚽","🏀","🏈","🎾","🏐","🏓","🏸","🥊","🥇","⛳"],
+    animals: ["🐶","🐱","🐭","🐹","🐰","🐻","🐼","🐸","🐨","🦊"]
+  };
+  const TOTAL_PAIRS = 8;
+  const START_SECONDS = 60;
+
+  let currentTheme="fruits";
+  let deck=[],firstCard=null,secondCard=null,lockBoard=false,matchedPairs=0,moves=0,timer=START_SECONDS,timerInterval;
+  const board=document.getElementById("board"),timerEl=document.getElementById("timer"),movesEl=document.getElementById("moves");
+  const modal=document.getElementById("modal"),modalContent=document.getElementById("modal-content"),modalRestart=document.getElementById("modal-restart");
+  const restart=document.getElementById("restart");
+  const themeButtons=document.querySelectorAll("[data-theme]");
+
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function makeDeck(){
+    const symbols=THEMES[currentTheme].slice(0,TOTAL_PAIRS);
+    return shuffle([...symbols,...symbols].map((s,i)=>({id:i,symbol:s})));
+  }
+
+  function renderBoard(){
+    board.innerHTML="";
+    deck.forEach((card,i)=>{
+      const c=document.createElement("div");
+      c.className="card";
+      c.dataset.index=i;
+      c.innerHTML=`
+        <div class="card-inner">
+          <div class="face front">
+            <div>${card.symbol}</div>
+            <div class="checkmark">✅</div>
+          </div>
+          <div class="face back"><div style="font-size:28px;">❖</div></div>
+        </div>`;
+      c.addEventListener("click",onCardClick);
+      board.appendChild(c);
+    });
+  }
+
+  function onCardClick(){
+    if(lockBoard) return;
+    const el=this;
+    const idx=+el.dataset.index;
+    if(el.classList.contains("flipped")||el.classList.contains("matched"))return;
+    el.classList.add("flipped");
+    const card=deck[idx];
+    if(!firstCard){firstCard={el,card};return;}
+    secondCard={el,card};moves++;movesEl.textContent=moves;lockBoard=true;
+    if(firstCard.card.symbol===secondCard.card.symbol){
+      firstCard.el.classList.add("matched");
+      secondCard.el.classList.add("matched");
+      matchedPairs++;
+      resetPick();
+      if(matchedPairs===TOTAL_PAIRS) endGame(true);
+    } else {
+      setTimeout(()=>{firstCard.el.classList.remove("flipped");secondCard.el.classList.remove("flipped");resetPick();},700);
+    }
+  }
+
+  function resetPick(){firstCard=null;secondCard=null;lockBoard=false;}
+
+  function startTimer(){
+    clearInterval(timerInterval);
+    timer=START_SECONDS;
+    timerEl.textContent=format(timer);
+    timerInterval=setInterval(()=>{
+      timer--;timerEl.textContent=format(timer);
+      if(timer<=0){clearInterval(timerInterval);endGame(false);}
+    },1000);
+  }
+  function stopTimer(){clearInterval(timerInterval);}
+  function format(s){return `00:${s.toString().padStart(2,'0')}`;}
+
+  function endGame(win){
+    lockBoard=true;stopTimer();
+    document.querySelectorAll(".card").forEach(c=>c.classList.add("flipped"));
+    modal.style.display="grid";
+    modalContent.innerHTML=win
+      ? `<h2>🎉 You Win!</h2><p class="small">Theme: ${currentTheme.toUpperCase()}<br>${moves} moves, time left ${format(timer)}.</p>`
+      : `<h2 style="color:#ef4444">⏰ Time's Up!</h2><p class="small">You matched ${matchedPairs}/${TOTAL_PAIRS} pairs.<br>Theme: ${currentTheme.toUpperCase()}</p>`;
+  }
+
+  function setActiveThemeButton(){
+    themeButtons.forEach(btn=>{
+      btn.classList.toggle("active",btn.dataset.theme===currentTheme);
+    });
+  }
+
+  function init(){
+    stopTimer();
+    deck=makeDeck();
+    firstCard=secondCard=null;lockBoard=false;matchedPairs=0;moves=0;
+    movesEl.textContent=moves;
+    renderBoard();
+    setActiveThemeButton();
+    setTimeout(()=>startTimer(),250);
+    modal.style.display="none";
+  }
+
+  restart.onclick=()=>init();
+  modalRestart.onclick=()=>init();
+  themeButtons.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      currentTheme=btn.dataset.theme;
+      init();
+    });
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

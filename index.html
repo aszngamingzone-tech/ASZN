@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASZN Game Zone</title>
+  <style>
+    /* === FONT IMPORT === */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap');
+
+    :root {
+      --navy: #1F3A5F;
+      --ivory: #F8F7F4;
+      --gold: #CBB994;
+      --text: #111111;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--ivory) 50%, var(--navy) 50%);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    header {
+      display: flex;
+      justify-content: flex-start;
+      padding: 20px 40px;
+      gap: 40px;
+    }
+
+    header h2 {
+      color: var(--navy);
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .title {
+      font-size: 58px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 40px;
+      color: #333;
+      letter-spacing: 1px;
+    }
+
+    .games {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .game-box {
+      background: var(--ivory);
+      border: 2.5px solid var(--gold);
+      border-radius: 15px;
+      padding: 25px 45px;
+      width: 200px;
+      text-align: center;
+      transition: 0.3s ease;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .game-box:hover {
+      background: var(--gold);
+      color: white;
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-box a {
+      text-decoration: none;
+      color: inherit;
+      font-weight: bold;
+      font-size: 17px;
+      letter-spacing: 0.5px;
+      transition: 0.3s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    footer {
+  background: transparent;
+  color: #ffffff;
+  text-align: center;
+  font-size: 12px;
+  margin-top: 40px;
+  padding: 10px;
+}
+
+    }
+
+    footer span {
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .title {
+        font-size: 42px;
+      }
+      .game-box {
+        width: 150px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>ASZN</h2>
+  </header>
+
+  <div class="container">
+    <div class="title">ASZN</div>
+    <div class="subtitle">SELECT A GAME</div>
+
+    <div class="games">
+      <div class="game-box">
+        <a href="tiktaktoe.html">TIC TAC TOE</a>
+      </div>
+      <div class="game-box">
+        <a href="Snake.html">SNAKE</a>
+      </div>
+      <div class="game-box">
+        <a href="car1.html">CAR RACER</a>
+      </div>
+      <div class="game-box">
+        <a href="ball2.html">BALL CATCHER</a>
+      </div>
+      <div class="game-box">
+        <a href="memory .html">MEMORY CARD</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 <span>ASZN</span> | Familia School Exhibition Project
+    <br>Built by Abhiraj Sikder, Kazi Zunaid, Shruti Majumder and Neev Das
+  </footer>
+
+</body>
+</html>

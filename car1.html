@@ -1,0 +1,357 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Car Racing Game</title>
+<style>
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #021020, #0b1d33);
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+  h1 { margin: 12px; font-size: 1.5rem; text-align: center; }
+  canvas {
+    border-radius: 10px;
+    background: #000;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    width: 95vw;
+    max-width: 500px;
+    height: auto;
+  }
+  #hud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin: 10px 0;
+    font-size: 1.1rem;
+  }
+  #controls {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  button {
+    background: #1e90ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover { background: #0074e6; }
+  #restartWrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #scoreboard {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 10px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    width: 260px;
+    text-align: center;
+  }
+  #scoreboard h2 {
+    margin: 6px 0;
+    font-size: 1.2rem;
+    color: #1e90ff;
+  }
+  #scoreboard ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  #scoreboard li {
+    padding: 4px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  #resetBtn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    font-weight: 600;
+  }
+  #resetBtn:hover { background: rgba(255,255,255,0.15); }
+</style>
+</head>
+<body>
+<h1>🚗 Car Racing Game</h1>
+
+<canvas id="gameCanvas" width="500" height="600"></canvas>
+
+<div id="hud">
+  <div>Score: <span id="score">0</span></div>
+  <div>Speed: <span id="speedText">5 Km/h</span></div>
+  <div>Points: <span id="points">0</span></div>
+</div>
+
+<div id="controls">
+  <button id="leftBtn">⬅ Left</button>
+  <button id="rightBtn">➡ Right</button>
+</div>
+
+<div id="restartWrapper">
+  <button id="restartBtn">🔄 Restart</button>
+  <button id="resetBtn">🧹 Reset Scoreboard</button>
+</div>
+
+<div id="scoreboard">
+  <h2>🏁 Scoreboard</h2>
+  <ol id="scoreList"></ol>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const lanes = [90, 230, 370];
+let targetX = lanes[1];
+let playerX = lanes[1];
+let playerY = 500;
+let smoothness = 0.15;
+
+let enemyY = [-120, -350, -580];
+let enemyLane = [0, 1, 2];
+let coinY = -200;
+let coinLane = 1;
+
+let speed = 6;
+let score = 0;
+let gameOver = false;
+let running = true;
+let topScores = JSON.parse(localStorage.getItem('topScores') || '[]');
+
+const scoreEl = document.getElementById('score');
+const speedEl = document.getElementById('speedText');
+const pointsEl = document.getElementById('points');
+
+document.getElementById('leftBtn').onclick = () => moveLeft();
+document.getElementById('rightBtn').onclick = () => moveRight();
+document.getElementById('restartBtn').onclick = () => restartGame();
+document.getElementById('resetBtn').onclick = () => resetScoreboard();
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowLeft') moveLeft();
+  if(e.key === 'ArrowRight') moveRight();
+  if(e.key === 'r' || e.key === 'R') restartGame();
+});
+
+function moveLeft() {
+  if(!running) return;
+  let idx = lanes.indexOf(targetX);
+  if(idx > 0) targetX = lanes[idx - 1];
+}
+function moveRight() {
+  if(!running) return;
+  let idx = lanes.indexOf(targetX);
+  if(idx < lanes.length - 1) targetX = lanes[idx + 1];
+}
+
+function restartGame() {
+  if (gameOver) saveScore();
+  score = 0;
+  speed = 5;
+  enemyY = [-120, -350, -580];
+  enemyLane = [0,1,2];
+  coinY = -200;
+  coinLane = 1;
+  gameOver = false;
+  running = true;
+  scoreEl.textContent = score;
+  speedEl.textContent = speed + ' Km/h';
+  updatePoints();
+}
+
+function saveScore() {
+  topScores.push(score);
+  topScores.sort((a,b) => b - a);
+  topScores = topScores.slice(0,5);
+  localStorage.setItem('topScores', JSON.stringify(topScores));
+  updateScoreboard();
+}
+
+function updateScoreboard() {
+  const list = document.getElementById('scoreList');
+  list.innerHTML = '';
+  topScores.forEach((s, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${i+1}. ${s}`;
+    list.appendChild(li);
+  });
+}
+updateScoreboard();
+
+function resetScoreboard() {
+  if (confirm("Do you want to reset the scoreboard?")) {
+    localStorage.removeItem('topScores');
+    topScores = [];
+    updateScoreboard();
+    alert("Scoreboard has been cleared!");
+  }
+}
+
+function updatePoints() {
+  pointsEl.textContent = score * 10;
+}
+
+function update() {
+  if(!running || gameOver) return;
+  playerX += (targetX - playerX) * smoothness;
+
+  for(let i=0; i<3; i++) {
+    enemyY[i] += speed;
+    if(enemyY[i] > 650) {
+      enemyY[i] = -100 - Math.random() * 250;
+
+      // ✅ Ensure at least one lane remains free
+      let newLane;
+      do {
+        newLane = Math.floor(Math.random() * 3);
+      } while (enemyLane.includes(newLane) && enemyLane.filter(l => l !== newLane).length < 2);
+
+      enemyLane[i] = newLane;
+
+      score++;
+      updatePoints();
+      if(score % 5 === 0 && speed < 22) speed++;
+      scoreEl.textContent = score;
+      speedEl.textContent = speed + ' Km/h';
+    }
+  }
+
+  coinY += speed;
+  if(coinY > 650) {
+    coinY = -200 - Math.random()*200;
+    coinLane = Math.floor(Math.random()*3);
+  }
+
+  checkCollisions();
+}
+
+function checkCollisions() {
+  const px = playerX - 25, py = playerY;
+  for(let i=0; i<3; i++) {
+    const ex = lanes[enemyLane[i]] - 25, ey = enemyY[i];
+    if(px < ex+50 && px+50 > ex && py < ey+90 && py+90 > ey) {
+      gameOver = true;
+      running = false;
+      saveScore();
+    }
+  }
+
+  const cx = lanes[coinLane] - 20, cy = coinY;
+  if(px < cx+40 && px+50 > cx && py < cy+40 && py+90 > cy) {
+    score += 3;
+    updatePoints();
+    coinY = -200 - Math.random()*200;
+    coinLane = Math.floor(Math.random()*3);
+    scoreEl.textContent = score;
+  }
+}
+
+function drawCar(px, py) {
+  const gradient = ctx.createLinearGradient(px, py, px, py+90);
+  gradient.addColorStop(0, '#00e5ff');
+  gradient.addColorStop(1, '#0066cc');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.roundRect(px, py, 50, 90, 10);
+  ctx.fill();
+
+  ctx.fillStyle = '#111';
+  ctx.fillRect(px+10, py+20, 30, 40);
+  ctx.fillStyle = '#fffacd';
+  ctx.fillRect(px+5, py, 10, 10);
+  ctx.fillRect(px+35, py, 10, 10);
+  ctx.fillStyle = '#ff3333';
+  ctx.fillRect(px+5, py+80, 10, 8);
+  ctx.fillRect(px+35, py+80, 10, 8);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(px+3, py+15, 8, 20);
+  ctx.fillRect(px+39, py+15, 8, 20);
+  ctx.fillRect(px+3, py+55, 8, 20);
+  ctx.fillRect(px+39, py+55, 8, 20);
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath();
+  ctx.moveTo(px+10, py+10);
+  ctx.lineTo(px+40, py+30);
+  ctx.stroke();
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Road
+  ctx.fillStyle = '#001933';
+  ctx.fillRect(0,0,500,600);
+  ctx.strokeStyle = '#335577';
+  ctx.lineWidth = 4;
+  for(let i=1;i<3;i++){
+    ctx.beginPath();
+    ctx.moveTo(i*166,0);
+    ctx.lineTo(i*166,600);
+    ctx.stroke();
+  }
+
+  // Enemies
+  for(let i=0;i<3;i++){
+    const ex = lanes[enemyLane[i]] - 25, ey = enemyY[i];
+    ctx.fillStyle = '#ff3333';
+    ctx.beginPath();
+    ctx.roundRect(ex, ey, 50, 90, 8);
+    ctx.fill();
+  }
+
+  // Coin
+  const cx = lanes[coinLane] - 20, cy = coinY;
+  ctx.fillStyle = 'gold';
+  ctx.beginPath();
+  ctx.arc(cx+20, cy+20, 15, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = 'orange';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Player Car
+  drawCar(playerX - 25, playerY);
+
+  if(gameOver) {
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0,250,500,120);
+    ctx.fillStyle = 'red';
+    ctx.font = '48px Segoe UI';
+    ctx.fillText('GAME OVER',100,310);
+    ctx.font = '20px Segoe UI';
+    ctx.fillStyle = 'white';
+    ctx.fillText('Press R or tap Restart',140,340);
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
